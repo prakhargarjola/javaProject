@@ -1,7 +1,11 @@
 package screens;
 
+import network.FileTransferManager;
+
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.net.InetAddress;
 
 public class ReceiverScreen extends JFrame {
 
@@ -9,98 +13,379 @@ public class ReceiverScreen extends JFrame {
 
     private JTextArea logArea;
 
+    private JProgressBar progressBar;
+
+    private final FileTransferManager manager;
+
+    private boolean receiverStarted = false;
+
     public ReceiverScreen() {
 
-        setTitle("LAN File Sharing System");
+        manager = new FileTransferManager();
 
-        setSize(600, 500);
+        setTitle("Receive Files");
+
+        setSize(900, 760);
 
         setLocationRelativeTo(null);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        setLayout(new BorderLayout(10, 10));
+        Color background =
+                new Color(15, 23, 42);
 
-        JPanel mainPanel = new JPanel();
+        Color cardColor =
+                new Color(30, 41, 59);
 
-        mainPanel.setLayout(new GridBagLayout());
+        Color fieldColor =
+                new Color(17, 24, 39);
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        Color green =
+                new Color(16, 185, 129);
 
-        gbc.insets = new Insets(10, 10, 10, 10);
+        setLayout(new GridBagLayout());
+
+        getContentPane().setBackground(background);
+
+        JPanel card =
+                new JPanel(new GridBagLayout());
+
+        card.setPreferredSize(
+                new Dimension(620, 660)
+        );
+
+        card.setBackground(cardColor);
+
+        card.setBorder(
+                new EmptyBorder(30, 35, 30, 35)
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+
+        gbc.gridy = 0;
+
+        gbc.weightx = 1;
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel title = new JLabel("Receive File");
+        gbc.insets =
+                new Insets(8, 0, 8, 0);
 
-        title.setFont(new Font(
-                "SansSerif",
-                Font.BOLD,
-                22
-        ));
+        // TITLE
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
+        JLabel title =
+                new JLabel(
+                        "Receive Files",
+                        SwingConstants.CENTER
+                );
 
-        mainPanel.add(title, gbc);
+        title.setForeground(Color.WHITE);
+
+        title.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.BOLD,
+                        32
+                )
+        );
+
+        card.add(title, gbc);
+
+        // SUBTITLE
 
         gbc.gridy++;
+
+        JLabel subtitle =
+                new JLabel(
+                        "Receive files over local network",
+                        SwingConstants.CENTER
+                );
+
+        subtitle.setForeground(
+                new Color(148, 163, 184)
+        );
+
+        subtitle.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        card.add(subtitle, gbc);
+
+        // SYSTEM INFO
+
+        try {
+
+            String systemName =
+                    InetAddress
+                            .getLocalHost()
+                            .getHostName();
+
+            String ip =
+                    InetAddress
+                            .getLocalHost()
+                            .getHostAddress();
+
+            gbc.gridy++;
+
+            JLabel systemLabel =
+                    createSecondaryLabel(
+                            "System: " + systemName
+                    );
+
+            systemLabel.setHorizontalAlignment(
+                    SwingConstants.CENTER
+            );
+
+            card.add(systemLabel, gbc);
+
+            gbc.gridy++;
+
+            JLabel ipLabel =
+                    createSecondaryLabel(
+                            "IP Address: " + ip
+                    );
+
+            ipLabel.setHorizontalAlignment(
+                    SwingConstants.CENTER
+            );
+
+            card.add(ipLabel, gbc);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        // START BUTTON
+
+        gbc.gridy++;
+
+        gbc.insets =
+                new Insets(28, 0, 14, 0);
 
         JButton startButton =
-                new JButton("Start Receiver");
+                createButton(
+                        "Start Receiver",
+                        green
+                );
 
-        mainPanel.add(startButton, gbc);
+        card.add(startButton, gbc);
+
+        // STATUS
 
         gbc.gridy++;
+
+        gbc.insets =
+                new Insets(0, 0, 18, 0);
 
         statusLabel =
-                new JLabel("Receiver Offline");
+                createSecondaryLabel(
+                        "Receiver Offline"
+                );
 
-        mainPanel.add(statusLabel, gbc);
+        statusLabel.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        card.add(statusLabel, gbc);
+
+        // PROGRESS BAR
 
         gbc.gridy++;
 
-        logArea = new JTextArea(10, 25);
+        progressBar =
+                new JProgressBar();
+
+        progressBar.setStringPainted(true);
+
+        progressBar.setPreferredSize(
+                new Dimension(500, 18)
+        );
+
+        card.add(progressBar, gbc);
+
+        // LOG AREA
+
+        gbc.gridy++;
+
+        gbc.insets =
+                new Insets(20, 0, 18, 0);
+
+        logArea =
+                new JTextArea();
 
         logArea.setEditable(false);
+
+        logArea.setBackground(fieldColor);
+
+        logArea.setForeground(Color.WHITE);
+
+        logArea.setCaretColor(Color.WHITE);
+
+        logArea.setFont(
+                new Font(
+                        "Monospaced",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        logArea.setBorder(
+                new EmptyBorder(
+                        10,
+                        12,
+                        10,
+                        12
+                )
+        );
 
         JScrollPane scrollPane =
                 new JScrollPane(logArea);
 
-        mainPanel.add(scrollPane, gbc);
+        scrollPane.setPreferredSize(
+                new Dimension(500, 260)
+        );
+
+        scrollPane.setBorder(
+                BorderFactory.createLineBorder(
+                        new Color(51, 65, 85)
+                )
+        );
+
+        card.add(scrollPane, gbc);
+
+        // BUTTON PANEL
 
         gbc.gridy++;
 
-        JPanel buttonPanel = new JPanel();
+        gbc.insets =
+                new Insets(12, 0, 0, 0);
 
         JButton backButton =
-                new JButton("Back");
+                createButton(
+                        "Back",
+                        new Color(71, 85, 105)
+                );
 
-        buttonPanel.add(backButton);
+        card.add(backButton, gbc);
 
-        mainPanel.add(buttonPanel, gbc);
+        add(card);
+
+        // RECEIVER LOG CALLBACK
+
+        manager.setReceiverLogCallback(message -> {
+
+            SwingUtilities.invokeLater(() -> {
+
+                logArea.append(message + "\n");
+
+                logArea.setCaretPosition(
+                        logArea.getDocument().getLength()
+                );
+            });
+        });
+
+        // RECEIVER PROGRESS CALLBACK
+
+        manager.setReceiverProgressCallback(progress -> {
+
+            SwingUtilities.invokeLater(() -> {
+
+                progressBar.setValue(progress);
+            });
+        });
+
+        // START RECEIVER
 
         startButton.addActionListener(e -> {
+
+            if (receiverStarted) {
+
+                return;
+            }
+
+            receiverStarted = true;
 
             statusLabel.setText(
                     "Receiver Running"
             );
 
             logArea.append(
-                    "Waiting for incoming connection...\n"
+                    "Receiver started successfully...\n"
             );
+
+            manager.startReceiver();
         });
 
+        // BACK BUTTON
+
         backButton.addActionListener(e -> {
+
+            manager.stopReceiver();
 
             dispose();
 
             new HomeScreen();
         });
 
-        add(mainPanel, BorderLayout.CENTER);
-
         setVisible(true);
+    }
+
+    private JLabel createSecondaryLabel(String text) {
+
+        JLabel label =
+                new JLabel(text);
+
+        label.setForeground(
+                new Color(148, 163, 184)
+        );
+
+        label.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        return label;
+    }
+
+    private JButton createButton(
+            String text,
+            Color color
+    ) {
+
+        JButton button =
+                new JButton(text);
+
+        button.setBackground(color);
+
+        button.setForeground(Color.WHITE);
+
+        button.setFocusPainted(false);
+
+        button.setBorderPainted(false);
+
+        button.setFont(
+                new Font(
+                        "SansSerif",
+                        Font.BOLD,
+                        15
+                )
+        );
+
+        button.setPreferredSize(
+                new Dimension(200, 42)
+        );
+
+        return button;
     }
 }
